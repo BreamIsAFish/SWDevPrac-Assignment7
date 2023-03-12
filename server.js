@@ -1,35 +1,38 @@
-const express = require("express");
-const dotenv = require("dotenv");
-const cookieParser = require("cookie-parser");
-const connectDB = require("./config/db");
+const express = require('express')
+const dotenv = require('dotenv')
+const cookieParser = require('cookie-parser')
+const connectDB = require('./config/db')
 
-dotenv.config({ path: "./config/config.env" });
+dotenv.config({ path: './config/config.env' })
 
 // Connect to DB
-connectDB();
+connectDB()
 
 // Route files //
-const hospitals = require("./routes/hospitals");
-const auth = require("./routes/auth");
+const auth = require('./routes/auth')
+const hospitals = require('./routes/hospitals')
+const appointments = require('./routes/appointments')
 
 // Body parser
-const app = express();
-app.use(express.json());
+const app = express()
+app.use(express.json())
 
 // Cookie parser
-app.use(cookieParser());
+app.use(cookieParser())
 
-app.use("/api/v1/hospitals", hospitals);
-app.use("/api/v1/auth", auth);
+// Mount routers
+app.use('/api/v1/auth', auth)
+app.use('/api/v1/hospitals', hospitals)
+app.use('/api/v1/appointments', appointments)
 
 // Port //
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5001
 const server = app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-});
+  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
+})
 
-process.on("unhandledRejection", (err, promise) => {
-  console.log(`Error ${err.message}`);
+process.on('unhandledRejection', (err, promise) => {
+  console.log(`Error ${err.message}`)
   // Close server and exit process
-  server.close(() => process.exit(1));
-});
+  server.close(() => process.exit(1))
+})
