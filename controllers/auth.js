@@ -37,8 +37,18 @@ exports.login = async (req, res, next) => {
       .json({ success: false, msg: "Please provide an email and password" });
   }
 
-  // Check for user
-  const user = await User.findOne({ email }).select("+password");
+  let user = null;
+  try {
+    // Check for user
+    user = await User.findOne({ email }).select("+password");
+  } catch {
+    return res
+      .status(401)
+      .json({
+        success: false,
+        msg: "Cannot convert email or password to string",
+      });
+  }
 
   if (!user) {
     return res.status(400).json({ success: false, msg: "Invalid credentials" });
@@ -74,10 +84,17 @@ const sendTokenResponse = (user, statusCode, res) => {
     options.secure = true;
   }
 
-  res.status(statusCode).cookie("token", token, options).json({
-    success: true,
-    token,
-  });
+  res
+    .status(statusCode) /*.cookie('token', token, options)*/
+    .json({
+      success: true,
+      //add for frontend
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      //end for frontend
+      token,
+    });
 };
 
 //@desc     Get current logged in user
@@ -88,5 +105,19 @@ exports.getMe = async (req, res, next) => {
   res.status(200).json({
     success: true,
     data: user,
+  });
+};
+
+//@desc     Log user out / clear cookie
+//@route    GET /api/v1/auth/logout
+//@access   Private
+exports.logout = async (req, res, next) => {
+  res.cookie("token", "none", {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+  res.status(200).json({
+    success: true,
+    data: {},
   });
 };
